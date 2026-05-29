@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { TaskStatus } from "@/types";
 
 type TaskFilter = "all" | "accepted" | "route" | "brand";
+const allTasks = [featuredRoute, ...nearbyTasks];
 
 interface TasksViewProps {
   taskStatuses: Record<string, TaskStatus>;
@@ -13,7 +14,6 @@ interface TasksViewProps {
 }
 
 export function TasksView({ taskStatuses, onTaskStatusChange }: TasksViewProps) {
-  const allTasks = [featuredRoute, ...nearbyTasks];
   const [activeActions, setActiveActions] = useState<Record<string, boolean>>({});
   const [activeFilter, setActiveFilter] = useState<TaskFilter>("all");
 
@@ -53,7 +53,7 @@ export function TasksView({ taskStatuses, onTaskStatusChange }: TasksViewProps) 
   };
 
   const resetDemo = () => {
-    tasks.forEach(task => onTaskStatusChange(task.id, task.id === featuredRoute.id ? "accepted" : "available"));
+    allTasks.forEach(task => onTaskStatusChange(task.id, task.status));
   };
 
   return (

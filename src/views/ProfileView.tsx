@@ -2,7 +2,13 @@ import { mockUser } from "@/mockData";
 import { Shield, Fingerprint, Activity, Clock, Settings, Network, ChevronRight } from "lucide-react";
 import { motion } from "motion/react";
 
-export function ProfileView() {
+interface ProfileViewProps {
+  energy: number;
+  assetCount: number;
+  completedTaskCount: number;
+}
+
+export function ProfileView({ energy, assetCount, completedTaskCount }: ProfileViewProps) {
   return (
     <div className="flex flex-col gap-8 pb-28 lg:pb-8 pt-6 px-6 w-full max-w-3xl mx-auto">
       
@@ -49,7 +55,7 @@ export function ProfileView() {
         <div className="relative z-10 grid grid-cols-3 gap-4 pt-6 border-t border-white/10">
           <div>
             <div className="text-[10px] text-slate-500 font-mono tracking-widest mb-1.5">ENERGY</div>
-            <div className="text-lg font-mono font-bold text-cyan-300">{mockUser.energy.toLocaleString()}</div>
+            <div className="text-lg font-mono font-bold text-cyan-300">{energy.toLocaleString()}</div>
           </div>
           <div className="pl-6 border-l border-white/10">
             <div className="text-[10px] text-slate-500 font-mono tracking-widest mb-1.5">CREDIT</div>
@@ -61,6 +67,19 @@ export function ProfileView() {
           </div>
         </div>
       </div>
+
+      <section className="grid grid-cols-3 gap-3">
+        {[
+          { label: "完成履约", value: completedTaskCount },
+          { label: "资产总数", value: assetCount },
+          { label: "贡献指数", value: mockUser.contribution },
+        ].map(item => (
+          <div key={item.label} className="rounded-xl border border-slate-800 bg-slate-900/50 p-4">
+            <div className="text-[10px] text-slate-500">{item.label}</div>
+            <div className="mt-1 text-xl font-mono font-bold text-slate-100">{item.value.toLocaleString()}</div>
+          </div>
+        ))}
+      </section>
 
       {/* Operations */}
       <div className="grid grid-cols-1 gap-2">

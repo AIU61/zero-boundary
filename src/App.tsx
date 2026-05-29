@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Tab, TaskStatus } from '@/types';
 import { TopBar } from '@/components/TopBar';
 import { BottomNav } from '@/components/BottomNav';
@@ -12,7 +12,7 @@ import { MapView } from '@/views/MapView';
 import { TasksView } from '@/views/TasksView';
 import { AssetsView } from '@/views/AssetsView';
 import { ProfileView } from '@/views/ProfileView';
-import { featuredRoute, mockUser, nearbyTasks } from '@/mockData';
+import { featuredRoute, mockUser, nearbyTasks, rewardAssetsByTaskId, userAssets } from '@/mockData';
 import { motion, AnimatePresence } from 'motion/react';
 import { useLocalStorageState } from '@/lib/storage';
 
@@ -26,6 +26,25 @@ export default function App() {
     initialTaskStatuses
   );
 
+  const completedTasks = useMemo(
+    () => allTasks.filter(task => (taskStatuses[task.id] ?? task.status) === 'completed'),
+    [taskStatuses]
+  );
+
+  const runtimeEnergy = useMemo(
+    () => mockUser.energy + completedTasks.reduce((sum, task) => sum + task.rewardEnergy, 0),
+    [completedTasks]
+  );
+
+  const unlockedAssets = useMemo(() => {
+    const taskAssets = completedTasks
+      .map(task => rewardAssetsByTaskId[task.id])
+      .filter(Boolean);
+    const byId = new Map([...userAssets, ...taskAssets].map(asset => [asset.id, asset]));
+
+    return Array.from(byId.values());
+  }, [completedTasks]);
+
   const updateTaskStatus = (taskId: string, status: TaskStatus) => {
     setTaskStatuses(prev => ({ ...prev, [taskId]: status }));
   };
@@ -33,10 +52,22 @@ export default function App() {
   const renderView = () => {
     switch (currentTab) {
       case 'home': return <HomeView onNavigate={setCurrentTab} taskStatuses={taskStatuses} />;
-      case 'map': return <MapView />;
+      case 'map': return (
+        <MapView
+          onNavigate={setCurrentTab}
+          taskStatuses={taskStatuses}
+          onTaskStatusChange={updateTaskStatus}
+        />
+      );
       case 'tasks': return <TasksView taskStatuses={taskStatuses} onTaskStatusChange={updateTaskStatus} />;
-      case 'assets': return <AssetsView />;
-      case 'profile': return <ProfileView />;
+      case 'assets': return <AssetsView assets={unlockedAssets} />;
+      case 'profile': return (
+        <ProfileView
+          energy={runtimeEnergy}
+          assetCount={unlockedAssets.length}
+          completedTaskCount={completedTasks.length}
+        />
+      );
       default: return <HomeView onNavigate={setCurrentTab} taskStatuses={taskStatuses} />;
     }
   };
@@ -52,7 +83,7 @@ export default function App() {
         />
 
         <div className="flex-1 flex flex-col h-screen overflow-hidden relative">
-          <TopBar energy={mockUser.energy} level={mockUser.level} />
+          <TopBar energy={runtimeEnergy} level={mockUser.level} />
           
           {/* Main scrollable area */}
           <main className="flex-1 overflow-y-auto overflow-x-hidden w-full relative">

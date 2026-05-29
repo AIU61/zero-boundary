@@ -77,3 +77,32 @@ export const userAssets: DigitalAsset[] = [
     expiresAt: "2041-06-30T23:59:59Z"
   }
 ];
+
+export const rewardAssetsByTaskId: Record<string, DigitalAsset> = {
+  "route-night-walk-1": {
+    id: "reward-route-night-walk-1",
+    name: "黑雨履约凭证",
+    type: "badge",
+    description: "完成黑雨冷萃夜行路线后自动铸造，可用于解锁下一段路线。",
+    issuer: "ZERO Boundary",
+    acquiredAt: "2041-05-30T21:20:00Z"
+  },
+  "task-1": {
+    id: "reward-task-1",
+    name: "新季试穿立减券",
+    type: "coupon",
+    description: "授权试穿偏好数据后获得，可在 ZERO 潮牌概念店抵扣。",
+    issuer: "ZERO 潮牌概念店",
+    acquiredAt: "2041-05-30T18:40:00Z",
+    expiresAt: "2041-06-30T23:59:59Z"
+  },
+  "task-2": {
+    id: "reward-task-2",
+    name: "蓝岸现场限定票根",
+    type: "ticket",
+    description: "Livehouse 音波收集完成纪念，记录本场演出和城市声纹。",
+    issuer: "蓝岸 Livehouse",
+    acquiredAt: "2041-05-30T22:10:00Z",
+    expiresAt: "2041-08-01T23:59:59Z"
+  }
+};

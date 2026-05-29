@@ -1,13 +1,44 @@
-import { userAssets } from "@/mockData";
-import { Ticket, Hexagon, Tag, CalendarClock } from "lucide-react";
-import { motion } from "motion/react";
+import { useMemo, useState } from "react";
+import { Ticket, Hexagon, Tag, CalendarClock, Search, X } from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
+import { cn } from "@/lib/utils";
+import { DigitalAsset } from "@/types";
 
-export function AssetsView() {
+type AssetFilter = "all" | DigitalAsset["type"];
+
+interface AssetsViewProps {
+  assets: DigitalAsset[];
+}
+
+export function AssetsView({ assets }: AssetsViewProps) {
+  const [activeFilter, setActiveFilter] = useState<AssetFilter>("all");
+  const [search, setSearch] = useState("");
+  const [selectedAsset, setSelectedAsset] = useState<DigitalAsset | null>(null);
+
+  const filteredAssets = useMemo(() => {
+    const keyword = search.trim().toLowerCase();
+
+    return assets.filter(asset => {
+      const matchesFilter = activeFilter === "all" || asset.type === activeFilter;
+      const matchesSearch = !keyword || [asset.name, asset.description, asset.issuer]
+        .some(value => value.toLowerCase().includes(keyword));
+
+      return matchesFilter && matchesSearch;
+    });
+  }, [activeFilter, assets, search]);
+
   const stats = [
-    { label: "徽章库", count: userAssets.filter(asset => asset.type === "badge").length, color: "text-slate-200" },
-    { label: "有效票根", count: userAssets.filter(asset => asset.type === "ticket").length, color: "text-slate-200" },
-    { label: "可用权益", count: userAssets.filter(asset => asset.type === "coupon").length, color: "text-slate-200" },
-    { label: "本月将过期", count: userAssets.filter(asset => asset.expiresAt).length, color: "text-rose-400" },
+    { label: "徽章库", count: assets.filter(asset => asset.type === "badge").length, color: "text-slate-200" },
+    { label: "有效票根", count: assets.filter(asset => asset.type === "ticket").length, color: "text-slate-200" },
+    { label: "可用权益", count: assets.filter(asset => asset.type === "coupon").length, color: "text-slate-200" },
+    { label: "本月将过期", count: assets.filter(asset => asset.expiresAt).length, color: "text-rose-400" },
+  ];
+
+  const filters: { id: AssetFilter; label: string }[] = [
+    { id: "all", label: "全部" },
+    { id: "badge", label: "徽章" },
+    { id: "ticket", label: "票根" },
+    { id: "coupon", label: "权益" },
   ];
 
   const getIcon = (type: string) => {
@@ -65,6 +96,40 @@ export function AssetsView() {
         ))}
       </div>
 
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <div className="flex gap-2 overflow-x-auto no-scrollbar">
+          {filters.map(filter => (
+            <button
+              key={filter.id}
+              onClick={() => setActiveFilter(filter.id)}
+              className={cn(
+                "rounded-full border px-4 py-1.5 text-[11px] font-mono transition-colors",
+                activeFilter === filter.id
+                  ? "border-cyber-blue bg-cyber-blue text-cyber-dark font-bold"
+                  : "border-slate-800 bg-slate-900/60 text-slate-400 hover:text-slate-200"
+              )}
+            >
+              {filter.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="flex items-center gap-2 rounded-xl border border-slate-800 bg-slate-900/60 px-3 py-2 md:w-64">
+          <Search size={16} className="text-slate-500" />
+          <input
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder="搜索资产"
+            className="w-full bg-transparent text-sm text-slate-200 outline-none placeholder:text-slate-600"
+          />
+          {search && (
+            <button onClick={() => setSearch("")} className="text-slate-500 hover:text-slate-300">
+              <X size={15} />
+            </button>
+          )}
+        </div>
+      </div>
+
       <h2 className="text-lg font-semibold text-slate-200 mt-2 tracking-wider">最新获取</h2>
       
       <motion.div 
@@ -73,8 +138,19 @@ export function AssetsView() {
         animate="show"
         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"
       >
-        {userAssets.map(asset => (
-          <motion.div variants={item} key={asset.id} className={`p-5 rounded-2xl bg-gradient-to-br ${getGradient(asset.type)} border flex flex-col gap-4 relative overflow-hidden group hover:-translate-y-1 transition-all duration-300 cursor-pointer shadow-lg hover:shadow-2xl`}>
+        {filteredAssets.length === 0 && (
+          <div className="md:col-span-2 lg:col-span-3 rounded-2xl border border-dashed border-slate-800 bg-slate-900/30 p-8 text-center text-sm text-slate-400">
+            没有匹配的资产。
+          </div>
+        )}
+
+        {filteredAssets.map(asset => (
+          <motion.button
+            variants={item}
+            key={asset.id}
+            onClick={() => setSelectedAsset(asset)}
+            className={`text-left p-5 rounded-2xl bg-gradient-to-br ${getGradient(asset.type)} border flex flex-col gap-4 relative overflow-hidden group hover:-translate-y-1 transition-all duration-300 cursor-pointer shadow-lg hover:shadow-2xl`}
+          >
             {/* Glossy overlay effect */}
             <div className="absolute top-0 right-0 left-0 h-1/2 bg-gradient-to-b from-white/5 to-transparent z-0 pointer-events-none" />
             
@@ -103,9 +179,66 @@ export function AssetsView() {
                 <span>EXPIRES {new Date(asset.expiresAt).toLocaleDateString()}</span>
               </div>
             )}
-          </motion.div>
+          </motion.button>
         ))}
       </motion.div>
+
+      <AnimatePresence>
+        {selectedAsset && (
+          <motion.div
+            className="fixed inset-0 z-[80] flex items-end justify-center bg-black/60 p-4 backdrop-blur-sm md:items-center"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={() => setSelectedAsset(null)}
+          >
+            <motion.div
+              initial={{ y: 24, opacity: 0, scale: 0.98 }}
+              animate={{ y: 0, opacity: 1, scale: 1 }}
+              exit={{ y: 24, opacity: 0, scale: 0.98 }}
+              onClick={(event) => event.stopPropagation()}
+              className={`relative w-full max-w-md rounded-2xl border bg-gradient-to-br ${getGradient(selectedAsset.type)} p-6 shadow-2xl`}
+            >
+              <button
+                onClick={() => setSelectedAsset(null)}
+                className="absolute right-4 top-4 rounded-full bg-black/40 p-1.5 text-slate-400 hover:text-white"
+              >
+                <X size={16} />
+              </button>
+
+              <div className="mb-6 flex items-start gap-4">
+                <div className="flex h-14 w-14 items-center justify-center rounded-xl border border-white/10 bg-black/50">
+                  {getIcon(selectedAsset.type)}
+                </div>
+                <div>
+                  <h3 className="pr-8 text-xl font-bold text-white">{selectedAsset.name}</h3>
+                  <p className="mt-1 text-xs text-slate-400">发行方：{selectedAsset.issuer}</p>
+                </div>
+              </div>
+
+              <p className="text-sm leading-relaxed text-slate-300">{selectedAsset.description}</p>
+
+              <div className="mt-6 grid grid-cols-2 gap-3 text-xs">
+                <div className="rounded-xl border border-white/10 bg-black/30 p-3">
+                  <div className="text-slate-500">资产编号</div>
+                  <div className="mt-1 font-mono text-slate-200">#{selectedAsset.id.toUpperCase()}</div>
+                </div>
+                <div className="rounded-xl border border-white/10 bg-black/30 p-3">
+                  <div className="text-slate-500">获取时间</div>
+                  <div className="mt-1 font-mono text-slate-200">{new Date(selectedAsset.acquiredAt).toLocaleDateString()}</div>
+                </div>
+              </div>
+
+              {selectedAsset.expiresAt && (
+                <div className="mt-3 flex items-center gap-2 rounded-xl border border-rose-500/20 bg-rose-950/20 p-3 text-xs text-rose-200">
+                  <CalendarClock size={14} />
+                  <span>有效期至 {new Date(selectedAsset.expiresAt).toLocaleDateString()}</span>
+                </div>
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

@@ -1,7 +1,9 @@
 import React, { useState, useRef } from "react";
-import { Navigation, Crosshair, Search, Store, Target, Tag, X, Flame } from "lucide-react";
+import { Navigation, Crosshair, Search, Store, Tag, X, Flame } from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { cn } from "@/lib/utils";
+import { featuredRoute, nearbyTasks } from "@/mockData";
+import { Tab, TaskStatus } from "@/types";
 
 type NodeType = 'route' | 'store' | 'brand';
 
@@ -14,6 +16,7 @@ interface MapNode {
   description: string;
   energy: number;
   tags: string[];
+  taskId?: string;
 }
 
 const mapNodes: MapNode[] = [
@@ -25,7 +28,8 @@ const mapNodes: MapNode[] = [
     left: "38%",
     description: "夜行任务起点，完成试饮即可获得数字凭证。",
     energy: 150,
-    tags: ["咖啡猎人", "隐藏菜单"]
+    tags: ["咖啡猎人", "隐藏菜单"],
+    taskId: "route-night-walk-1"
   },
   {
     id: "n2",
@@ -35,7 +39,8 @@ const mapNodes: MapNode[] = [
     left: "70%",
     description: "授权试穿偏好数据，获取专属立减权益和限量徽章。",
     energy: 300,
-    tags: ["数据授权", "品牌共创"]
+    tags: ["数据授权", "品牌共创"],
+    taskId: "task-1"
   },
   {
     id: "n3",
@@ -45,7 +50,8 @@ const mapNodes: MapNode[] = [
     left: "28%",
     description: "夜行路线核心节点，参与声波收集任务，掉落特殊资产。",
     energy: 500,
-    tags: ["夜行路线", "限时打卡"]
+    tags: ["夜行路线", "限时打卡"],
+    taskId: "task-2"
   },
   {
     id: "n4",
@@ -79,7 +85,15 @@ const mapNodes: MapNode[] = [
   }
 ];
 
-export function MapView() {
+const allTasks = [featuredRoute, ...nearbyTasks];
+
+interface MapViewProps {
+  onNavigate: (tab: Tab) => void;
+  taskStatuses: Record<string, TaskStatus>;
+  onTaskStatusChange: (taskId: string, status: TaskStatus) => void;
+}
+
+export function MapView({ onNavigate, taskStatuses, onTaskStatusChange }: MapViewProps) {
   const [search, setSearch] = useState("");
   const [activeFilter, setActiveFilter] = useState<NodeType | 'all'>('all');
   const [selectedNode, setSelectedNode] = useState<MapNode | null>(null);
@@ -145,6 +159,37 @@ export function MapView() {
     setScale(1);
   };
 
+  const getLinkedTask = (node: MapNode) => allTasks.find(task => task.id === node.taskId);
+  const getTaskStatus = (node: MapNode) => {
+    const task = getLinkedTask(node);
+    return task ? taskStatuses[task.id] ?? task.status : null;
+  };
+
+  const handleNodeAction = (node: MapNode) => {
+    const task = getLinkedTask(node);
+
+    if (!task) return;
+
+    const status = taskStatuses[task.id] ?? task.status;
+
+    if (status === "available") {
+      onTaskStatusChange(task.id, "accepted");
+      onNavigate("tasks");
+      return;
+    }
+
+    onNavigate(status === "completed" ? "assets" : "tasks");
+  };
+
+  const getActionLabel = (node: MapNode) => {
+    const status = getTaskStatus(node);
+
+    if (!status) return "即将开放";
+    if (status === "completed") return "查看资产";
+    if (status === "accepted") return "继续履约";
+    return "领取任务";
+  };
+
   return (
     <div 
       className="relative w-full h-[calc(100vh-145px)] md:h-[calc(100vh-73px)] overflow-hidden border-b border-t border-white/5 md:border-l md:border-t-0 flex items-center justify-center bg-transparent select-none touch-none"
@@ -187,6 +232,7 @@ export function MapView() {
         <AnimatePresence>
           {filteredNodes.map(node => {
             const isSelected = selectedNode?.id === node.id;
+            const status = getTaskStatus(node);
             return (
               <motion.div 
                 key={node.id}
@@ -206,6 +252,7 @@ export function MapView() {
                 <div className={cn(
                   "w-4 h-4 rounded-full transition-all duration-300", 
                   getNodeColor(node.type),
+                  status === "completed" ? "ring-2 ring-emerald-300/70" : "",
                   isSelected ? "scale-150 ring-2 ring-white/30" : "group-hover:scale-125"
                 )} />
                 <span className={cn(
@@ -336,14 +383,23 @@ export function MapView() {
                   {tag}
                 </span>
               ))}
+              {getTaskStatus(selectedNode) && (
+                <span className="px-1.5 py-0.5 text-[10px] bg-cyber-blue/10 text-cyan-300 border border-cyber-blue/20 rounded">
+                  {getTaskStatus(selectedNode) === "completed" ? "已完成" : getTaskStatus(selectedNode) === "accepted" ? "进行中" : "可领取"}
+                </span>
+              )}
             </div>
             
             <div className="flex items-center justify-between pt-3 border-t border-slate-800">
                <div className="text-sm font-mono text-cyber-blue font-bold flex items-center gap-1">
                  +{selectedNode.energy} <span className="text-xs text-slate-500 font-sans font-normal">能量/次</span>
                </div>
-               <button className="px-4 py-1.5 bg-cyber-blue text-cyber-dark font-medium text-xs rounded hover:bg-cyan-400 transition-colors">
-                 前往履约
+               <button
+                 onClick={() => handleNodeAction(selectedNode)}
+                 disabled={!selectedNode.taskId}
+                 className="px-4 py-1.5 bg-cyber-blue text-cyber-dark font-medium text-xs rounded hover:bg-cyan-400 disabled:cursor-not-allowed disabled:bg-slate-700 disabled:text-slate-400 transition-colors"
+               >
+                 {getActionLabel(selectedNode)}
                </button>
             </div>
           </motion.div>
