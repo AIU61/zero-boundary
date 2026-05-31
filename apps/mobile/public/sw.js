@@ -1,5 +1,5 @@
-const CACHE_NAME = "lingjie-shell-v2";
-const APP_SHELL = ["/", "/manifest.webmanifest", "/icon.svg"];
+const CACHE_NAME = "lingjie-shell-v3";
+const APP_SHELL = ["./", "manifest.webmanifest", "icon.svg"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(

@@ -53,14 +53,14 @@ const governance = ref<Governance>();
 const lastBenefit = ref<Benefit>();
 
 const images = {
-  home: "/zero-ui/home.png",
-  explore: "/zero-ui/explore.png",
-  tasks: "/zero-ui/tasks.png",
-  route: "/zero-ui/route.png",
-  brand: "/zero-ui/brand.png",
-  product: "/zero-ui/product.png",
-  wallet: "/zero-ui/wallet.png",
-  profile: "/zero-ui/profile.png"
+  home: `${import.meta.env.BASE_URL}zero-ui/home.png`,
+  explore: `${import.meta.env.BASE_URL}zero-ui/explore.png`,
+  tasks: `${import.meta.env.BASE_URL}zero-ui/tasks.png`,
+  route: `${import.meta.env.BASE_URL}zero-ui/route.png`,
+  brand: `${import.meta.env.BASE_URL}zero-ui/brand.png`,
+  product: `${import.meta.env.BASE_URL}zero-ui/product.png`,
+  wallet: `${import.meta.env.BASE_URL}zero-ui/wallet.png`,
+  profile: `${import.meta.env.BASE_URL}zero-ui/profile.png`
 };
 
 const brands = [
