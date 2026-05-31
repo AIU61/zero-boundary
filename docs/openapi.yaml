@@ -1,0 +1,168 @@
+openapi: 3.1.0
+info:
+  title: 零界 App MVP API
+  version: 0.1.0
+  description: 咖啡夜行路线、门店核销、权益钱包、数据授权与联盟链存证接口。
+servers:
+  - url: http://localhost:3100
+paths:
+  /api/health:
+    get:
+      summary: 健康检查
+      responses:
+        "200":
+          description: 服务可用
+  /api/home:
+    get:
+      summary: 用户首页聚合
+      responses:
+        "200":
+          description: 返回用户钱包、任务、门店和治理摘要
+  /api/tasks/{id}/claim:
+    post:
+      summary: 领取路线任务
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: string
+                  default: user-linyan
+      responses:
+        "200":
+          description: 任务已领取
+        "404":
+          description: 任务不存在
+        "409":
+          description: 任务已被其他用户领取
+  /api/checkins/qr/verify:
+    post:
+      summary: 门店扫码核销
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CheckinVerifyRequest"
+      responses:
+        "200":
+          description: 核销成功，发放数字票根和权益
+        "400":
+          description: 请求字段非法
+        "404":
+          description: 用户、任务或门店不存在
+        "409":
+          description: 重复核销、门店错误、二维码无效或任务过期
+  /api/benefits/issue:
+    post:
+      summary: 平台或商家发放权益凭证
+      responses:
+        "200":
+          description: 发放成功并生成权益凭证存证
+  /api/consents/grant:
+    post:
+      summary: 用户授权数据用途
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConsentGrantRequest"
+      responses:
+        "200":
+          description: 授权成功并生成授权存证
+        "400":
+          description: 请求字段非法
+  /api/consents/revoke:
+    post:
+      summary: 用户撤回数据授权
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [consentId]
+              properties:
+                consentId:
+                  type: string
+      responses:
+        "200":
+          description: 撤回成功并追加撤回存证
+        "404":
+          description: 授权记录不存在
+  /api/wallet:
+    get:
+      summary: 查询权益钱包
+      parameters:
+        - name: userId
+          in: query
+          required: false
+          schema:
+            type: string
+            default: user-linyan
+      responses:
+        "200":
+          description: 返回零界 ID、能量、信用和权益资产
+  /api/chain/receipts/{businessId}:
+    get:
+      summary: 查询链上存证
+      parameters:
+        - name: businessId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: 返回 registry、payloadHash、txId 和确认状态
+        "404":
+          description: 存证不存在
+  /api/governance/summary:
+    get:
+      summary: 查询平台治理摘要
+      responses:
+        "200":
+          description: 返回商家审核、核销、链上队列等治理指标
+components:
+  schemas:
+    CheckinVerifyRequest:
+      type: object
+      required: [taskId, merchantId, qrPayload, deviceId]
+      properties:
+        userId:
+          type: string
+          default: user-linyan
+        taskId:
+          type: string
+        merchantId:
+          type: string
+        qrPayload:
+          type: string
+        deviceId:
+          type: string
+    ConsentGrantRequest:
+      type: object
+      required: [merchantId, purpose, rewardDescription, expiresAt]
+      properties:
+        userId:
+          type: string
+          default: user-linyan
+        merchantId:
+          type: string
+        purpose:
+          type: string
+        rewardDescription:
+          type: string
+        expiresAt:
+          type: string
+          format: date-time

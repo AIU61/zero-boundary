@@ -1,6 +1,0 @@
-{
-  "name": "ZERO Boundary",
-  "description": "城市探索任务、数字权益钱包与品牌授权体验的移动端应用演示。",
-  "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
-}
