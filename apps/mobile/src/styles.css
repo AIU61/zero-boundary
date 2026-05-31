@@ -26,17 +26,18 @@ button {
 }
 
 .app-frame {
+  align-items: flex-start;
   display: flex;
   justify-content: center;
   min-height: 100vh;
 }
 
 .phone-screen {
+  aspect-ratio: 941 / 1672;
   background: #070b15;
   box-shadow: 0 32px 90px rgba(0, 0, 0, 0.58);
-  min-height: 100vh;
   position: relative;
-  width: min(100vw, 430px);
+  width: min(100vw, 430px, calc(100vh * 941 / 1672));
 }
 
 .screen-image {
@@ -69,7 +70,7 @@ button {
   .phone-screen {
     border: 1px solid rgba(0, 229, 255, 0.16);
     border-radius: 28px;
-    min-height: calc(100vh - 36px);
     overflow: hidden;
+    width: min(calc(100vw - 36px), 430px, calc((100vh - 36px) * 941 / 1672));
   }
 }
