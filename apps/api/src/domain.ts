@@ -3,6 +3,7 @@ export type CheckinStatus = "pending" | "verified" | "rejected";
 export type BenefitStatus = "available" | "used" | "expired";
 export type ConsentStatus = "active" | "revoked" | "expired";
 export type ChainStatus = "pending" | "confirmed" | "failed";
+export type OrderStatus = "created" | "paid" | "cancelled";
 
 export interface Merchant {
   id: string;
@@ -12,6 +13,7 @@ export interface Merchant {
   distanceMeters: number;
   rating: number;
   complianceStatus: "approved" | "pending" | "suspended";
+  description?: string;
 }
 
 export interface RouteStop {
@@ -48,6 +50,38 @@ export interface Benefit {
   status: BenefitStatus;
   taskId?: string;
   chainBusinessId?: string;
+}
+
+export interface CityRoute {
+  id: string;
+  title: string;
+  subtitle: string;
+  taskId: string;
+  distanceKm: number;
+  stopCount: number;
+  status: "locked" | "available" | "started" | "completed";
+  stops: RouteStop[];
+}
+
+export interface Product {
+  id: string;
+  merchantId: string;
+  title: string;
+  description: string;
+  priceCents: number;
+  benefitTitle: string;
+  status: "available" | "sold_out";
+}
+
+export interface Order {
+  id: string;
+  userId: string;
+  productId: string;
+  merchantId: string;
+  amountCents: number;
+  status: OrderStatus;
+  createdAt: string;
+  benefitId?: string;
 }
 
 export interface UserWallet {

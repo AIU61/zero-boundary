@@ -62,6 +62,128 @@ button {
   opacity: 1;
 }
 
+.hotspot:focus-visible {
+  outline: 2px solid rgba(0, 229, 255, 0.78);
+  opacity: 1;
+}
+
+.phone-screen.busy::after {
+  align-items: center;
+  background: rgba(2, 4, 11, 0.34);
+  color: #dff8ff;
+  content: "处理中...";
+  display: flex;
+  font-size: 13px;
+  font-weight: 700;
+  inset: 0;
+  justify-content: center;
+  letter-spacing: 0.08em;
+  pointer-events: none;
+  position: absolute;
+  text-shadow: 0 0 18px rgba(0, 229, 255, 0.85);
+  z-index: 7;
+}
+
+.toast {
+  background: rgba(4, 12, 28, 0.88);
+  border: 1px solid rgba(0, 229, 255, 0.34);
+  border-radius: 999px;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.38);
+  color: #eafaff;
+  font-size: 12px;
+  left: 50%;
+  line-height: 1.35;
+  margin: 0;
+  max-width: 86%;
+  padding: 9px 14px;
+  position: absolute;
+  text-align: center;
+  top: 10px;
+  transform: translateX(-50%);
+  z-index: 8;
+}
+
+.action-sheet {
+  background:
+    linear-gradient(180deg, rgba(10, 18, 42, 0.96), rgba(3, 7, 18, 0.98)),
+    #060b18;
+  border: 1px solid rgba(0, 229, 255, 0.28);
+  border-radius: 22px 22px 0 0;
+  bottom: 0;
+  box-shadow: 0 -24px 70px rgba(0, 0, 0, 0.62);
+  color: #f4fbff;
+  left: 0;
+  max-height: 52%;
+  overflow: auto;
+  padding: 18px 18px 20px;
+  position: absolute;
+  width: 100%;
+  z-index: 9;
+}
+
+.action-sheet h2 {
+  font-size: 20px;
+  line-height: 1.2;
+  margin: 4px 34px 8px 0;
+}
+
+.sheet-kicker {
+  color: #59e4ff;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.sheet-status {
+  color: #b8c7e8;
+  font-size: 13px;
+  line-height: 1.45;
+  margin: 0 0 14px;
+}
+
+.sheet-close {
+  align-items: center;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 50%;
+  color: #ffffff;
+  display: flex;
+  height: 30px;
+  justify-content: center;
+  padding: 0;
+  position: absolute;
+  right: 14px;
+  top: 14px;
+  width: 30px;
+}
+
+.action-sheet dl {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+
+.sheet-row {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  display: grid;
+  gap: 4px;
+  padding-top: 8px;
+}
+
+.sheet-row dt {
+  color: #6ee7ff;
+  font-size: 11px;
+}
+
+.sheet-row dd {
+  color: #f6f8ff;
+  font-size: 13px;
+  line-height: 1.42;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
 @media (min-width: 560px) {
   body {
     padding: 18px 0;
